@@ -128,11 +128,24 @@ SECTIONS
 
   /* ## Sections in RAM */
 
-  /* ### main stack */
-  .stack (NOLOAD) : ALIGN(8) {
+  /* ### .bss */
+  .bss (NOLOAD) : ALIGN(8)
+  {
+    /* put stack first in RAM. */
     . = . + _stack_size;
     PROVIDE(_stack_start = .);
+
+    . = ALIGN(4);
+    __sbss = .;
+    *(.bss .bss.*);
+    *(COMMON); /* Uninitialized C statics */
+    . = ALIGN(4); /* 4-byte align the end (VMA) of this section */
   } > RAM
+  /* Allow sections from user `memory.x` injected using `INSERT AFTER .bss` to
+   * use the .bss zeroing mechanism by pushing __ebss. Note: do not change
+   * output region or load region in those user sections! */
+  . = ALIGN(4);
+  __ebss = .;
 
   /* ### .data */
   .data : ALIGN(4)
@@ -173,21 +186,6 @@ SECTIONS
   . = ALIGN(32);
   __veneer_limit = .;
 
-  /* ### .bss */
-  .bss (NOLOAD) : ALIGN(4)
-  {
-    . = ALIGN(4);
-    __sbss = .;
-    *(.bss .bss.*);
-    *(COMMON); /* Uninitialized C statics */
-    . = ALIGN(4); /* 4-byte align the end (VMA) of this section */
-  } > RAM
-  /* Allow sections from user `memory.x` injected using `INSERT AFTER .bss` to
-   * use the .bss zeroing mechanism by pushing __ebss. Note: do not change
-   * output region or load region in those user sections! */
-  . = ALIGN(4);
-  __ebss = .;
-
   /* ### .uninit */
   .uninit (NOLOAD) : ALIGN(4)
   {
@@ -200,6 +198,7 @@ SECTIONS
 
   /* Place the heap right after `.uninit` in RAM */
   PROVIDE(__sheap = __euninit);
+  PROVIDE(__eheap = ORIGIN(RAM) + LENGTH(RAM));
 
   /* ## .got */
   /* Dynamic relocations are unsupported. This section is only used to detect relocatable code in
