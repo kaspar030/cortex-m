@@ -49,6 +49,8 @@ PROVIDE(SysTick = DefaultHandler);
 PROVIDE(DefaultHandler = DefaultHandler_);
 PROVIDE(HardFault = HardFault_);
 
+PROVIDE(_stack_size = 512);
+
 /* # Interrupt vectors */
 EXTERN(__INTERRUPTS); /* `static` variable similar to `__EXCEPTIONS` */
 
@@ -62,8 +64,6 @@ SECTIONS
 {
   PROVIDE(_ram_start = ORIGIN(RAM));
   PROVIDE(_ram_end = ORIGIN(RAM) + LENGTH(RAM));
-  PROVIDE(_stack_start = _ram_end);
-
   /* ## Sections in FLASH */
   /* ### Vector table */
   .vector_table ORIGIN(FLASH) :
@@ -127,6 +127,13 @@ SECTIONS
   } > FLASH
 
   /* ## Sections in RAM */
+
+  /* ### main stack */
+  .stack (NOLOAD) : ALIGN(8) {
+    . = . + _stack_size;
+    PROVIDE(_stack_start = .);
+  } > RAM
+
   /* ### .data */
   .data : ALIGN(4)
   {
