@@ -104,6 +104,10 @@ SECTIONS
     *(.HardFaultTrampoline);
     *(.HardFault.*);
 
+    /* add support for RIOT's "xfa" (cross file arrays) */
+    . = ALIGN(4);
+    KEEP (*(SORT(.roxfa.*)))
+
     . = ALIGN(4); /* Pad .text to the alignment to workaround overlapping load section bug in old lld */
     __etext = .;
   } > FLASH
@@ -129,6 +133,11 @@ SECTIONS
     . = ALIGN(4);
     __sdata = .;
     *(.data .data.*);
+
+    /* add support for RIOT's "xfa" (cross file arrays) */
+    . = ALIGN(4);
+    KEEP (*(SORT(.xfa.*)))
+
     . = ALIGN(4); /* 4-byte align the end (VMA) of this section */
   } > RAM AT>FLASH
   /* Allow sections from user `memory.x` injected using `INSERT AFTER .data` to
