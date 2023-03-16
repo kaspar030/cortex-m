@@ -64,6 +64,7 @@ SECTIONS
 {
   PROVIDE(_ram_start = ORIGIN(RAM));
   PROVIDE(_ram_end = ORIGIN(RAM) + LENGTH(RAM));
+
   /* ## Sections in FLASH */
   /* ### Vector table */
   .vector_table ORIGIN(FLASH) :
@@ -215,6 +216,7 @@ SECTIONS
     *(.ARM.exidx);
     *(.ARM.exidx.*);
     *(.ARM.extab.*);
+    *(.eh_frame);
   }
 }
 
